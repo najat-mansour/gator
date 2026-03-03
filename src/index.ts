@@ -1,17 +1,21 @@
-import { CommandsRegistry, handlerLogin, registerCommand, runCommand } from "./commands";
-import { argv, exit } from "process";
+import { CommandsRegistry, handlerLogin, handlerRegister, handlerReset, handlerUsers, registerCommand, runCommand } from "./commands";
+import { argv } from "process";
 
-function main() {
+async function main() {
   const registry: CommandsRegistry = {};
   registerCommand(registry, "login", handlerLogin);
+  registerCommand(registry, "register", handlerRegister);
+  registerCommand(registry, "reset", handlerReset);
+  registerCommand(registry, "users", handlerUsers);
   if (argv.length === 2) { 
     console.error(`No command is provided ...!`);
-    exit(1);
+    process.exit(1);
   }
 
   const cmdName = argv[2];
   const args = argv.slice(3);
-  runCommand(registry, cmdName, ...args);
+  await runCommand(registry, cmdName, ...args);
+  process.exit(0);
 }
 
 main();
