@@ -1,10 +1,17 @@
 import { readConfig, setUser } from "./config";
-import { createFeed, getAllFeeds, printFeed } from "./lib/db/queries/feeds";
+import { createFeedFollow, deleteFeedFollow, getFeedFollowsForUser } from "./lib/db/queries/feed_follows";
+import { createFeed, getAllFeeds, getFeedByUrl } from "./lib/db/queries/feeds";
 import { createUser, deleteAllUsers, getAllUsers, getUserByName } from "./lib/db/queries/users";
 import { fetchFeed } from "./rss";
 
-type CommandHandler = (...args: string[]) => Promise<void>;
-
+export type User = {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    name: string;
+}
+export type UserCommandHandler = (user: User, ...args: string[]) => Promise<void>;
+export type CommandHandler = (...args: string[]) => Promise<void>;
 export type CommandsRegistry = Record<string, CommandHandler>;
 
 export function registerCommand(registry: CommandsRegistry, cmdName: string, handler: CommandHandler): void {
@@ -56,19 +63,39 @@ export async function handlerUsers(): Promise<void> {
 }
 
 export async function handlerAgg(): Promise<void> {
-    const feed =await fetchFeed(`https://www.wagslane.dev/index.xml`);
+    const feed = await fetchFeed(`https://www.wagslane.dev/index.xml`);
     console.log(JSON.stringify(feed));
 }
 
-export async function handlerAddFeed(...args: string[]): Promise<void> {
+export async function handlerAddFeed(user: User, ...args: string[]): Promise<void> {
     const name = args[0];
     const url = args[1];
-    const user = await getUserByName(config.currentUserName);
     const feed = await createFeed(name, url, user.id);
-    printFeed(user, feed);
+    console.log(`Feed name: ${feed.name}`);
+    console.log(`User name: ${config.currentUserName}`);
 }
 
 export async function handlerFeeds(): Promise<void> {
     const feeds = await getAllFeeds();
     console.log(feeds);
+}
+
+export async function handlerFollow(user: User, url: string): Promise<void> {
+    const feed = await getFeedByUrl(url);
+    const result = await createFeedFollow(user.id, feed.id);
+    console.log(`Feed has been follow successfully ...!`);
+    console.log(`User name: ${result.userName}`);
+    console.log(`Feed name: ${result.feedName}`);
+}
+
+export async function handlerFollowing(user: User): Promise<void> {
+    const result = await getFeedFollowsForUser(user.id);
+    for(const record of result) {
+        console.log(`${record.feedName}`);
+    }
+}
+
+export async function handlerUnfollow(user: User, url: string): Promise<void> {
+    const feed = await getFeedByUrl(url);
+    await deleteFeedFollow(user.id, feed.id);
 }

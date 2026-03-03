@@ -15,6 +15,13 @@
       "when": 1772505054181,
       "tag": "0001_abandoned_bishop",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772549126521,
+      "tag": "0002_sudden_sabretooth",
+      "breakpoints": true
     }
   ]
 }

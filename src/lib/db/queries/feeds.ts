@@ -1,9 +1,13 @@
 import { db } from "..";
 import { users, feeds } from "../schema";
 import { eq } from "drizzle-orm";
+import { createFeedFollow } from "./feed_follows";
 
 export async function createFeed(name: string, url: string, userId: string) { 
     const [result] = await db.insert(feeds).values({ name: name, url: url, userId: userId }).returning();
+    //! Also, create a feed follow record
+    const feed = await getFeedByUrl(url);
+    await createFeedFollow(userId, feed.id);
     return result;
 }
 
@@ -19,13 +23,7 @@ export async function getAllFeeds() {
     return result;
 }
 
-export type User = typeof users.$inferSelect; 
-export type Feed = typeof feeds.$inferSelect; 
-
-export function printFeed(user: User, feed: Feed) {
-    console.log(`User ID: ${user.id}`);
-    console.log(`User name: ${user.name}`);
-    console.log(`Feed ID: ${feed.id}`);
-    console.log(`Feed name: ${feed.name}`);
-    console.log(`Feed URL: ${feed.url}`);
+export async function getFeedByUrl(url: string) {
+    const [result] = await db.select().from(feeds).where(eq(feeds.url, url));
+    return result;
 }
