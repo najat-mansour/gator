@@ -1,8 +1,9 @@
 import { readConfig, setUser } from "./config";
 import { createFeedFollow, deleteFeedFollow, getFeedFollowsForUser } from "./lib/db/queries/feed_follows";
-import { createFeed, getAllFeeds, getFeedByUrl } from "./lib/db/queries/feeds";
+import { createFeed, getAllFeeds, getFeedByUrl, getNextFeedToFetch, markFeedFetched } from "./lib/db/queries/feeds";
 import { createUser, deleteAllUsers, getAllUsers, getUserByName } from "./lib/db/queries/users";
 import { fetchFeed } from "./rss";
+import { parseDuration } from "./utils";
 
 export type User = {
     id: string;
@@ -62,9 +63,21 @@ export async function handlerUsers(): Promise<void> {
     }
 }
 
-export async function handlerAgg(): Promise<void> {
-    const feed = await fetchFeed(`https://www.wagslane.dev/index.xml`);
-    console.log(JSON.stringify(feed));
+export async function handlerAgg(user: User, timeBetweenReqs: string): Promise<void> {
+    const duration = parseDuration(timeBetweenReqs);
+
+    const interval = setInterval(() => {
+        scrapeFeeds();
+    }, duration);
+
+    //! Code to stop the setInterval when exiting the program! 
+    await new Promise<void>((resolve) => {
+        process.on("SIGINT", () => {
+            console.log("Shutting down feed aggregator...");
+            clearInterval(interval);
+            resolve();
+        });
+    });
 }
 
 export async function handlerAddFeed(user: User, ...args: string[]): Promise<void> {
@@ -98,4 +111,17 @@ export async function handlerFollowing(user: User): Promise<void> {
 export async function handlerUnfollow(user: User, url: string): Promise<void> {
     const feed = await getFeedByUrl(url);
     await deleteFeedFollow(user.id, feed.id);
+}
+
+async function scrapeFeeds(): Promise<void> {
+    //! Get the next feed to fetch from the DB.
+    const nextFeedToFetch = await getNextFeedToFetch();
+    //! Mark it as fetched.
+    await markFeedFetched(nextFeedToFetch.id);
+    //! Fetch the feed using the URL (we already wrote this function)
+    const feedData = await fetchFeed(nextFeedToFetch.url);
+    //! Iterate over the items in the feed and print their titles to the console.
+    for(const item of feedData.channel.item) {
+        console.log(`* ${item.title}}`);
+    }
 }
