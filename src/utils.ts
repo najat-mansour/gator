@@ -6,17 +6,25 @@ export function parseDuration(durationStr: string): number {
         throw new Error(`Invalid Format, use Xunit where unit can be: ms | s | m | h`);
     }
     
-    const number = Number(match[1]);
-    const unit = match[2];
+    try {
+        const number = Number(match[1]);
+        const unit = match[2];
 
-    if (unit === "ms")
-        return number;
+        if (unit === "ms")
+            return number;
 
-    if (unit === "s")
-        return number * 1000;
+        if (unit === "s")
+            return number * 1000;
 
-    if (unit === "m")
-        return number * 60 * 1000;
+        if (unit === "m")
+            return number * 60 * 1000;
 
-    return number * 60 * 60 * 1000;
+        return number * 60 * 60 * 1000;
+
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            console.log(`Please, enter a valid number ...!`);
+        }
+        return 60 * 1000; // Default = 1min
+    }
 }

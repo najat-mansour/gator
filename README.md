@@ -22,7 +22,6 @@ ___
 ##### Main Language 
 * `TypeScript`
 ##### Node Modules 
-* `readline`: Reading data from a readable stream. 
 * ``: .
 ___
 

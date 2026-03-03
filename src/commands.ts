@@ -1,6 +1,7 @@
 import { readConfig, setUser } from "./config";
 import { createFeedFollow, deleteFeedFollow, getFeedFollowsForUser } from "./lib/db/queries/feed_follows";
 import { createFeed, getAllFeeds, getFeedByUrl, getNextFeedToFetch, markFeedFetched } from "./lib/db/queries/feeds";
+import { createPost, getPostsForUser } from "./lib/db/queries/posts";
 import { createUser, deleteAllUsers, getAllUsers, getUserByName } from "./lib/db/queries/users";
 import { fetchFeed } from "./rss";
 import { parseDuration } from "./utils";
@@ -111,6 +112,7 @@ export async function handlerFollowing(user: User): Promise<void> {
 export async function handlerUnfollow(user: User, url: string): Promise<void> {
     const feed = await getFeedByUrl(url);
     await deleteFeedFollow(user.id, feed.id);
+    console.log(`User feed has been unfollowed successfully ...!`);
 }
 
 async function scrapeFeeds(): Promise<void> {
@@ -122,6 +124,24 @@ async function scrapeFeeds(): Promise<void> {
     const feedData = await fetchFeed(nextFeedToFetch.url);
     //! Iterate over the items in the feed and print their titles to the console.
     for(const item of feedData.channel.item) {
-        console.log(`* ${item.title}}`);
+        await createPost(item.title, item.link, item.description, item.pubDate, nextFeedToFetch.id);
     }
+    console.log(`Posts has been saved successfully ...!`);
 }
+
+export async function handlerBrowse(user: User, limit: string = "2"): Promise<void> {
+    try {
+        const posts = await getPostsForUser(user.id, Number(limit));
+        for(const post of posts) {
+            console.log(`Title: ${post.title}`);
+            console.log(`URL: ${post.url}`);
+            console.log(`Description: ${post.description}`);
+            console.log(`Published at: ${post.publishedAt}`);
+        }
+
+    } catch(err: unknown) {
+        if (err instanceof Error) {
+            console.log(`Please, enter a valid number ...!`);
+        }
+    }
+} 
