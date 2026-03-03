@@ -1,4 +1,4 @@
-import { CommandsRegistry, handlerLogin, handlerRegister, handlerReset, handlerUsers, registerCommand, runCommand } from "./commands";
+import { CommandsRegistry, handlerAgg, handlerLogin, handlerRegister, handlerReset, handlerUsers, registerCommand, runCommand } from "./commands";
 import { argv } from "process";
 
 async function main() {
@@ -7,6 +7,7 @@ async function main() {
   registerCommand(registry, "register", handlerRegister);
   registerCommand(registry, "reset", handlerReset);
   registerCommand(registry, "users", handlerUsers);
+  registerCommand(registry, "agg", handlerAgg);
   if (argv.length === 2) { 
     console.error(`No command is provided ...!`);
     process.exit(1);
