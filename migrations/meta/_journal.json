@@ -8,6 +8,13 @@
       "when": 1772497878696,
       "tag": "0000_broad_captain_universe",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1772505054181,
+      "tag": "0001_abandoned_bishop",
+      "breakpoints": true
     }
   ]
 }

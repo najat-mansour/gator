@@ -1,8 +1,9 @@
 import { readConfig, setUser } from "./config";
+import { createFeed, getAllFeeds, printFeed } from "./lib/db/queries/feeds";
 import { createUser, deleteAllUsers, getAllUsers, getUserByName } from "./lib/db/queries/users";
 import { fetchFeed } from "./rss";
 
-type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
+type CommandHandler = (...args: string[]) => Promise<void>;
 
 export type CommandsRegistry = Record<string, CommandHandler>;
 
@@ -15,48 +16,59 @@ export async function runCommand(registry: CommandsRegistry, cmdName: string, ..
     if (!handler) {
         throw new Error(`Unknown command: ${cmdName}`);
     }   
-    await handler(cmdName, ...args);
+    await handler(...args);
 }
 
-export async function handlerLogin(cmdName: string, ...args: string[]): Promise<void> {
-    if (args.length === 0) {
+const config = readConfig();
+
+export async function handlerLogin(userName: string): Promise<void> {
+    if (!userName) {
         throw new Error(`No username is provided ...!`);
     }
-    const username = args[0];
-    const user = await getUserByName(username);
+    const user = await getUserByName(userName);
     if (!user) {
-        throw new Error(`User ${username} does not exist ...!`);
+        throw new Error(`User ${userName} does not exist ...!`);
     }
-    setUser(username);
-    console.log(`User ${username} has been set successfully ...!`);
+    setUser(userName);
+    console.log(`User ${userName} has been set successfully ...!`);
 }
 
-export async function handlerRegister(cmdName: string, ...args: string[]): Promise<void> {
-    if (args.length === 0) {
+export async function handlerRegister(userName: string): Promise<void> {
+    if (!userName) {
         throw new Error(`No username is provided ...!`);
     }
-    const username = args[0];
-    const user = await createUser(username);
-    setUser(username);
-    console.log(`User ${username} has been created successfully ...!`);
+    const user = await createUser(userName);
+    setUser(userName);
+    console.log(`User ${userName} has been created successfully ...!`);
     console.log(user);
 }
 
-export async function handlerReset(cmdName: string, ...args: string[]): Promise<void> {
+export async function handlerReset(): Promise<void> {
     await deleteAllUsers();
     console.log(`All users have been deleted successfully ...!`);
 }
 
-export async function handlerUsers(cmdName: string, ...args: string[]): Promise<void> {
-    const config = readConfig();
-    const currentUserName = config.currentUserName;
+export async function handlerUsers(): Promise<void> {
     const users = await getAllUsers();
     for(const user of users) {
-        console.log(`* ${user.name} ${user.name === currentUserName ? "(current)" : ""}`);
+        console.log(`* ${user.name} ${user.name === config.currentUserName ? "(current)" : ""}`);
     }
 }
 
-export async function handlerAgg(cmdName: string, ...args: string[]): Promise<void> {
+export async function handlerAgg(): Promise<void> {
     const feed =await fetchFeed(`https://www.wagslane.dev/index.xml`);
-    console.log(JSON.stringify(feed, null, 2));
+    console.log(JSON.stringify(feed));
+}
+
+export async function handlerAddFeed(...args: string[]): Promise<void> {
+    const name = args[0];
+    const url = args[1];
+    const user = await getUserByName(config.currentUserName);
+    const feed = await createFeed(name, url, user.id);
+    printFeed(user, feed);
+}
+
+export async function handlerFeeds(): Promise<void> {
+    const feeds = await getAllFeeds();
+    console.log(feeds);
 }
