@@ -1,8 +1,13 @@
 import { db } from "..";
 import { users, feeds, posts } from "../schema";
-import { desc, eq } from "drizzle-orm";
+import {  desc, eq } from "drizzle-orm";
 
 export async function createPost(title: string, url: string, description: string, publishedAt: string, feedId: string) {
+    const post = await getPostByUrl(url);
+    if (post) {
+        //! Don't try to add already-existed post!
+        return;
+    }
     const [result] = await db.insert(posts).values({
         title: title,
         url: url,
@@ -26,5 +31,10 @@ export async function getPostsForUser(userId: string, limit: number) {
         .where(eq(users.id, userId))
         .orderBy(desc(posts.publishedAt))
         .limit(limit);
+    return result;
+}
+
+async function getPostByUrl(url: string) {
+    const [result] = await db.select().from(posts).where(eq(posts.url, url));
     return result;
 }
