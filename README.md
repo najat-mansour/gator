@@ -64,17 +64,17 @@ ___
 ### Commands Table
 | Command Name | Parameters (if any) | Example | Purpose |
 |-------------|---------------------|----------|----------|
-| login | username | npm run start login najat | Log in to a specific user account |
-| register | username | npm run start register najat | Register a new user |
-| reset | – | npm run start reset | Delete all users from the database |
-| users | – | npm run start users | List all users in the database |
-| agg | time between requests (e.g., 3m, 10s) | npm run start agg 3m | Fetch and parse recent feeds periodically and store them in the `posts` table |
-| addFeed | feed-name, feed-url | npm run start addFeed feed-name feed-url | Add a new feed to the `feeds` table |
-| feeds | – | npm run start feeds | List all feeds in the database |
-| follow | feed-url | npm run start follow feed-url | Follow a feed |
-| following | – | npm run start following | List all feeds followed by the current user |
-| unfollow | feed-url | npm run start unfollow feed-url | Unfollow a feed |
-| browse | limit | npm run start browse 2 | List a limited number of posts for the current user |
+| login | username | `npm run start login najat` | Log in to a specific user account |
+| register | username | `npm run start register najat` | Register a new user |
+| reset | – | `npm run start reset` | Delete all users from the database |
+| users | – | `npm run start users` | List all users in the database |
+| agg | time between requests (e.g., 3m, 10s) | `npm run start agg 3m` | Fetch and parse recent feeds periodically and store them in the `posts` table |
+| addFeed | feed-name, feed-url | `npm run start addFeed feed-name feed-url` | Add a new feed to the `feeds` table |
+| feeds | – | `npm run start feeds` | List all feeds in the database |
+| follow | feed-url | `npm run start follow feed-url` | Follow a feed |
+| following | – | `npm run start following` | List all feeds followed by the current user |
+| unfollow | feed-url | `npm run start unfollow feed-url` | Unfollow a feed |
+| browse | limit | `npm run start browse 2` | List a limited number of posts for the current user |
 ___
 
 ### Author
